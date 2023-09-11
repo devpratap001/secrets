@@ -1,0 +1,53 @@
+*{
+    margin: 0;
+    padding: 0;
+}
+body{
+    background-color: rgb(224, 220, 220);
+}
+main{
+    display: inline-block;
+    width: 60vw;
+    height: 80vh;
+    position: relative;
+    top: 10vh;
+    left: 20vw;
+}
+.img{
+    transform: scale(5,5);
+    position: relative;
+    left: 28vw;
+    top: 20vh;
+}
+.logo{
+    height: 40vh;
+}
+.text{
+    font-family: 'Josefin Sans', sans-serif;
+    font-size: 1.5rem;
+    text-align: center;
+}
+.buttons{
+    text-align: center;
+}
+.btnH{
+    text-decoration: none;
+    width: 70px;
+    height: 20px;
+    display: inline-block;
+    text-align: center;
+    padding: 7px;
+    font-family: 'Josefin Sans', sans-serif;
+    margin: 15px 10px;
+}
+.btn-dark, .btn-light:active{
+    background-color: black;
+    color: wheat;
+    border-radius: 5px;
+}
+.btn-light, .btn-dark:active{
+    background-color: white;
+    color: black;
+    border: 2px solid black;
+    border-radius: 5px;
+}

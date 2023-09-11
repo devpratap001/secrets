@@ -1,0 +1,22 @@
+{
+  "name": "secrets",
+  "version": "1.0.0",
+  "description": "bcrypt and passport",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app.js"
+  },
+  "author": "Dev",
+  "license": "ISC",
+  "$schema": "./package.schema.json",
+  "dependencies": {
+    "dotenv": "^16.3.1",
+    "express": "^4.18.2",
+    "express-handlebars": "^7.1.2",
+    "express-session": "^1.17.3",
+    "mongoose": "^7.5.0",
+    "passport": "^0.6.0",
+    "passport-local": "^1.0.0",
+    "passport-local-mongoose": "^8.0.0"
+  }
+}

@@ -1,0 +1,66 @@
+.main, .login{
+    background-color: white;
+    display: inline-block;
+    width: 15vw;
+    height: 50vh;
+    position: relative;
+    left: 35vw;
+    top: 20vh;
+    padding: 10px;
+}
+.login{
+    height:40vh ;
+}
+.field{
+    display: inline-block;
+    font-family: 'Dosis', sans-serif;
+    width: 180px;
+    padding: 6px;
+    border-radius: 5px;
+    margin: 5px;
+    border: 2px solid rgba(128, 128, 128, 0.747);
+    background-color: rgb(233, 227, 227);
+}
+.field:focus{
+    border: 2px solid rgb(117, 117, 236);
+}
+.btn{
+    text-decoration: none;
+    width: 70px;
+    height: 30px;
+    display: inline-block;
+    text-align: center;
+    padding: 7px;
+    font-family: 'Josefin Sans', sans-serif;
+    margin: 15px 10px;
+    cursor: pointer;
+}
+.btn-dark, .btn-light:active{
+    background-color: black;
+    color: white;
+    border-radius: 5px;
+}
+.btn-light, .btn-dark:active{
+    background-color: white;
+    color: black;
+    border: 2px solid black;
+    border-radius: 5px;
+}
+.main p{
+    font-family: 'Dosis', sans-serif;
+    font-weight: bold;
+    font-size: 0.8rem;
+    color: grey;
+    margin: 20px 5px;
+}
+.google{
+    background-color: rgb(255, 17, 0);
+    border: 2px solid rgb(255, 17, 0);
+    color: white;
+    font-family: 'Dosis', sans-serif;
+    display: inline-block;
+    padding: 10px;
+    margin-top: 20px;
+    font-weight: bolder;
+    cursor: pointer;
+}

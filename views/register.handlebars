@@ -1,0 +1,29 @@
+<main class="main">
+    <form action="/register" method="post" onsubmit=" return validate()" >
+        <input required type="email" name="username" class="field" placeholder="Username"><br>
+        <input required type="password" name="password" class="field" placeholder="Password min. 8 chars"><br>
+        <input required type="password" name="confPassword" class="field" placeholder="Confirm Password"><br>
+        <input type="reset" value="Clear" class="btn btn-light">
+        <input type="submit" value="Submit" class="btn btn-dark">
+    </form>
+    <p>Or Sign Up using: </p>
+    <button class="google">
+        <i class="fa-brands fa-google" style="color: #ffffff;"></i> Google
+    </button>
+</main>
+
+<script>
+    function validate(){
+    let status= true;
+    let pass= document.querySelectorAll(".field")[1].value;
+    let cPass= document.querySelectorAll(".field")[2].value;
+    console.log(pass)
+    console.log(cPass)
+    if (pass === cPass){
+        status= true
+    } else {
+        status= false
+    }
+    return status
+}
+</script>

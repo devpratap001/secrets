@@ -5,6 +5,8 @@ const { engine } = require("express-handlebars");
 const session = require("express-session");
 const passport = require("passport")
 const passportLocalMongoose = require("passport-local-mongoose")
+const googleStrategy = require("passport-google-oauth20").Strategy;
+const findOrCreate = require('mongoose-findorcreate')
 
 const app = express();
 app.use(session({
@@ -35,21 +37,46 @@ mongoose.connect("mongodb://127.0.0.1:27017/Secret")
 
 const userSchema = new mongoose.Schema({
     username: String,
-    password: String
+    password: String,
+    googleId: String
 });
 
 // plugins 
 
 userSchema.plugin(passportLocalMongoose);
+userSchema.plugin(findOrCreate);
 
 // models 
 const user = mongoose.model("user", userSchema);
 
 // authentication of model 
 passport.use(user.createStrategy())
+// create google  strategy 
+passport.use(new googleStrategy({
+    clientID: process.env.CLIENT_ID,
+    clientSecret: process.env.CLIENT_SECRET,
+    callbackURL: "http://localhost:8000/auth/google/secrets",
+    userProfileUrl: "https://googleapis.com/oauth2/v3/userinfo"
+},
+    function (accessToken, refreshToken, profile, cb) {
+        user.findOrCreate({ googleId: profile.id}, function (err, user) {
+            return cb(err, user);
+        });
+    }
+));
 // searialize and deserialize 
-passport.serializeUser(user.serializeUser())
-passport.deserializeUser(user.deserializeUser())
+passport.serializeUser(function (user, done) {
+    done(null, user.id);
+});
+
+passport.deserializeUser(async function (id, done) {
+    try {
+        const User = await user.findById(id);
+        done(null, User);
+    } catch (err) {
+        done(err, null)
+    }
+});
 
 // routes 
 
@@ -121,6 +148,17 @@ app.get("/logout", (req, res) => {
         }
     })
 })
+
+// now handling the google oauth authentication 
+
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile"] }))
+
+app.get('/auth/google/secrets',
+    passport.authenticate('google', { failureRedirect: '/login' }),
+    function (req, res) {
+        // Successful authentication, redirect home.
+        res.redirect('/secrets');
+    });
 
 app.listen(port, (err) => {
     if (err) {

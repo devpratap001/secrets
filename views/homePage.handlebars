@@ -1,1 +1,11 @@
-<a href="/logout" class="btnH btn-light" >Log Out</a>
+<div class="secretsPage">
+    <div class="secrets">
+        {{#each secretsDoc}}
+            <div class="secretMessage">{{this}}</div>
+        {{/each}}
+    </div>
+    <div class="nav">
+        <a href="/logout" class="btnH btn-light">Log Out</a>
+        <a href="/secrets/write" class="btnH btn-dark">Secret</a>
+    </div>
+</div>

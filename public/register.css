@@ -14,12 +14,14 @@
 .field{
     display: inline-block;
     font-family: 'Dosis', sans-serif;
+    font-weight: bold;
     width: 180px;
     padding: 6px;
     border-radius: 5px;
     margin: 5px;
     border: 2px solid rgba(128, 128, 128, 0.747);
     background-color: rgb(233, 227, 227);
+    color: black;
 }
 .field:focus{
     border: 2px solid rgb(117, 117, 236);

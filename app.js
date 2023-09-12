@@ -48,6 +48,7 @@ userSchema.plugin(findOrCreate);
 
 // models 
 const user = mongoose.model("user", userSchema);
+const Secret = require("./db/model");
 
 // authentication of model 
 passport.use(user.createStrategy())
@@ -59,7 +60,7 @@ passport.use(new googleStrategy({
     userProfileUrl: "https://googleapis.com/oauth2/v3/userinfo"
 },
     function (accessToken, refreshToken, profile, cb) {
-        user.findOrCreate({ googleId: profile.id}, function (err, user) {
+        user.findOrCreate({ googleId: profile.id, username: profile.emails[0].value }, function (err, user) {
             return cb(err, user);
         });
     }
@@ -131,11 +132,50 @@ app.post("/login", (req, res) => {
     })
 })
 
-app.get("/secrets", (req, res) => {
-    if (req.isAuthenticated) {
-        res.render("homePage")
-    } else {
-        res.redirect("/login")
+app.get("/secrets", async (req, res) => {
+    try {
+        if (req.isAuthenticated) {
+            if (req.user) {
+                let secrets_list = [];
+                const secretList = await Secret.find({}, { _id: 0, secret: 1 });
+                secretList.forEach((element) => {
+                    secrets_list.push(element.secret)
+                })
+                res.render("homePage", { secretsDoc: secrets_list })
+            } else {
+                res.redirect("/login")
+            }
+        } else {
+            res.redirect("/login")
+        }
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+app.get("/secrets/write", async (req, res) => {
+    try {
+        const secretList = [];
+        const secret_list = await Secret.find({ email: req.user.username }, { _id: 0, secret: 1 });
+        secret_list.forEach((element) => {
+            secretList.push(element.secret)
+        });
+        res.render("newSecret", { secrets: secretList })
+    } catch (error) {
+        console.log(error)
+    }
+})
+
+app.post("/secrets/write", async (req, res) => {
+    try {
+        if (req.user) {
+            const newSec = new Secret({ email: req.user.username, secret: req.body.secret });
+            await newSec.save();
+            const secret_list = await Secret.find({ email: req.user.username }, { _id: 0, secret: 1 });
+            res.send(secret_list)
+        }
+    } catch (error) {
+        console.log(error)
     }
 })
 
@@ -151,7 +191,7 @@ app.get("/logout", (req, res) => {
 
 // now handling the google oauth authentication 
 
-app.get("/auth/google", passport.authenticate("google", { scope: ["profile"] }))
+app.get("/auth/google", passport.authenticate("google", { scope: ["profile", "email"] }))
 
 app.get('/auth/google/secrets',
     passport.authenticate('google', { failureRedirect: '/login' }),

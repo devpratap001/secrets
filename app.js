@@ -2,11 +2,13 @@ require("dotenv").config();
 const express = require("express");
 const mongoose = require("mongoose");
 const { engine } = require("express-handlebars");
+const cookieParser = require("cookie-parser");
 const session = require("express-session");
 const passport = require("passport")
 const passportLocalMongoose = require("passport-local-mongoose")
 const googleStrategy = require("passport-google-oauth20").Strategy;
 const findOrCreate = require('mongoose-findorcreate')
+const jwt = require("jsonwebtoken");
 
 const app = express();
 app.use(session({
@@ -16,6 +18,7 @@ app.use(session({
 }))
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 const port = process.env.PORT || 8000
 app.use(express.static(__dirname + "/public"));
 app.use(passport.initialize());
@@ -38,8 +41,22 @@ mongoose.connect("mongodb://127.0.0.1:27017/Secret")
 const userSchema = new mongoose.Schema({
     username: String,
     password: String,
-    googleId: String
+    googleId: String,
+    tokens: [
+        { token: String }
+    ]
 });
+
+userSchema.methods.generateToken = async function () {
+    try {
+        const token = await jwt.sign({ _id: this._id }, process.env.SECRET_KEY);
+        this.tokens = this.tokens.concat([{ token: token }]);
+        await this.save();
+        return token;
+    } catch (error) {
+        console.log(error)
+    }
+}
 
 // plugins 
 
@@ -79,6 +96,20 @@ passport.deserializeUser(async function (id, done) {
     }
 });
 
+// middlewadre 
+
+async function auth(req, res, next) {
+    try {
+        const token = req.cookies.jwt;
+        const tokenUser = await jwt.verify(token, process.env.SECRET_KEY);
+        req.token = token;
+        req.user = await user.findOne({ _id: tokenUser._id });
+        next()
+    } catch (error) {
+        res.redirect("/secrets")
+    }
+}
+
 // routes 
 
 app.get("/", (req, res) => {
@@ -104,7 +135,9 @@ app.post("/register", (req, res) => {
                 res.redirect("/login")
             }
         } else {
-            passport.authenticate("local", { failureRedirect: "/login" })(req, res, function () {
+            passport.authenticate("local", { failureRedirect: "/login" })(req, res, async function () {
+                const token = await user.generateToken();
+                res.cookie("jwt", token, { expires: new Date(Date.now() + 30000) })
                 res.redirect("/secrets")
             })
         }
@@ -125,7 +158,9 @@ app.post("/login", (req, res) => {
         if (err) {
             console.log(err)
         } else {
-            passport.authenticate("local", { failureRedirect: "/login" })(req, res, function () {
+            passport.authenticate("local", { failureRedirect: "/login" })(req, res, async function () {
+                const token = await req.user.generateToken();
+                res.cookie("jwt", token, { expires: new Date(Date.now() + 120000), httpOnly: true })
                 res.redirect("/secrets")
             })
         }
@@ -153,7 +188,7 @@ app.get("/secrets", async (req, res) => {
     }
 })
 
-app.get("/secrets/write", async (req, res) => {
+app.get("/secrets/write", auth, async (req, res) => {
     try {
         const secretList = [];
         const secret_list = await Secret.find({ email: req.user.username }, { _id: 0, secret: 1 });
@@ -179,7 +214,11 @@ app.post("/secrets/write", async (req, res) => {
     }
 })
 
-app.get("/logout", (req, res) => {
+app.get("/logout", auth, async (req, res) => {
+    req.user.tokens= req.user.tokens.filter((element)=>{
+        return element.token !== req.token
+    })
+    await req.user.save()
     req.logout(function (err) {
         if (err) {
             console.log(err)
